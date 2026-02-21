@@ -3,71 +3,73 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Wedding Countdown</title>
+    <title>Carly & Lanier Wedding Countdown</title>
     <style>
         body { 
             font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; 
-            background: #121212; 
+            /* REPLACE THE URL BELOW WITH YOUR PHOTO LINK */
+            background: linear-gradient(rgba(0, 0, 0, 0.5), rgba(0, 0, 0, 0.5)), 
+                        url('https://drive.google.com/file/d/1EGWnWeezY1o9ZKXc6f7GD_xCgvwcGIgF/view?usp=drive_linkhttps://drive.google.com/file/d/1EGWnWeezY1o9ZKXc6f7GD_xCgvwcGIgF/view?usp=drive_link');
+            background-size: cover;
+            background-position: center;
+            background-attachment: fixed;
             color: white; 
             margin: 0; 
             padding: 20px; 
+            min-height: 100vh;
         }
         h2.main-title {
             text-align: center;
-            color: #00d4ff; /* You can change this to #ff69b4 for pink! */
+            color: #ffffff;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.5);
             text-transform: uppercase;
-            letter-spacing: 3px;
-            margin-top: 40px;
-            font-size: 2rem;
+            letter-spacing: 5px;
+            margin-top: 60px;
+            font-size: 2.5rem;
         }
         .dashboard { 
             display: grid; 
-            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); 
-            gap: 20px; 
-            max-width: 1200px; 
-            margin: 40px auto; 
+            grid-template-columns: repeat(auto-fit, minmax(320px, 1fr)); 
+            gap: 25px; 
+            max-width: 1100px; 
+            margin: 50px auto; 
         }
         .card { 
-            background: #1e1e1e; 
-            padding: 25px; 
-            border-radius: 15px; 
-            box-shadow: 0 10px 30px rgba(0,0,0,0.5); 
-            border: 1px solid #333; 
+            /* Frosted Glass Effect */
+            background: rgba(255, 255, 255, 0.1); 
+            backdrop-filter: blur(10px);
+            -webkit-backdrop-filter: blur(10px);
+            padding: 30px; 
+            border-radius: 20px; 
+            box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.37);
+            border: 1px solid rgba(255, 255, 255, 0.18); 
             text-align: center;
         }
-        h1 { font-size: 1.5rem; color: #00d4ff; margin: 0 0 10px 0; }
-        .pic { font-size: 0.9rem; color: #888; margin-bottom: 20px; }
+        h1 { font-size: 1.6rem; color: #fff; margin: 0 0 10px 0; border-bottom: 1px solid rgba(255,255,255,0.2); padding-bottom: 10px; }
+        .pic { font-size: 0.9rem; color: #ddd; margin-bottom: 20px; font-style: italic; }
         .timer { 
-            font-size: 2.5rem; 
+            font-size: 2.6rem; 
             font-weight: bold; 
-            font-family: monospace; 
-            background: #262626;
-            padding: 15px;
-            border-radius: 8px;
+            font-family: 'Courier New', Courier, monospace; 
             color: #fff;
-            letter-spacing: 2px;
+            letter-spacing: 3px;
         }
         .labels { 
             display: flex; 
             justify-content: space-around; 
-            color: #666; 
+            color: rgba(255,255,255,0.7); 
             text-transform: uppercase; 
             font-size: 0.7rem; 
             margin-top: 10px; 
         }
-        #loading { 
-            text-align: center; 
-            font-size: 1.2rem; 
-            color: #00d4ff; 
-            margin-top: 100px; 
-        }
+        #loading { text-align: center; font-size: 1.5rem; margin-top: 100px; text-shadow: 2px 2px 4px rgba(0,0,0,0.5); }
     </style>
 </head>
 <body>
 
 <h2 class="main-title">Carly & Lanier Wedding Countdown</h2>
 
-<div id="loading">Gathering the details...</div>
+<div id="loading">Setting the scene...</div>
 <div class="dashboard" id="dashboard"></div>
 
 <script>
@@ -79,11 +81,10 @@
 
         try {
             const response = await fetch(googleAppUrl);
-            if (!response.ok) throw new Error('Network error');
             const projects = await response.json();
             
             loadingEl.style.display = "none";
-            dashboardEl.innerHTML = ""; // Clears dashboard for fresh load
+            dashboardEl.innerHTML = ""; 
 
             projects.forEach((proj, index) => {
                 const card = document.createElement('div');
@@ -92,7 +93,7 @@
                 
                 card.innerHTML = `
                     <h1>${proj.task}</h1>
-                    <div class="pic">In Charge: <strong>${proj.person}</strong></div>
+                    <div class="pic">Details: <strong>${proj.person}</strong></div>
                     <div class="timer" id="${clockId}">00:00:00:00</div>
                     <div class="labels">
                         <span>Days</span><span>Hrs</span><span>Min</span><span>Sec</span>
@@ -102,8 +103,7 @@
                 startTimer(new Date(proj.deadline).getTime(), clockId);
             });
         } catch (error) {
-            loadingEl.innerHTML = "Connection Error. Check Google App Permissions.";
-            loadingEl.style.color = "#ff4c4c";
+            loadingEl.innerHTML = "Error loading. Check Google deployment.";
         }
     }
 
