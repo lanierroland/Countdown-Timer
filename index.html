@@ -1,27 +1,57 @@
-function sendReminders() {
-  const sheet = SpreadsheetApp.getActiveSpreadsheet().getActiveSheet();
-  const data = sheet.getDataRange().getValues();
-  const today = new Date();
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CBSC Countdown</title>
+    <style>
+        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background: #1a1a1a; color: white; display: flex; justify-content: center; align-items: center; height: 100vh; margin: 0; }
+        .container { text-align: center; background: #2d2d2d; padding: 3rem; border-radius: 20px; box-shadow: 0 10px 30px rgba(0,0,0,0.5); border: 1px solid #444; }
+        h1 { font-size: 2.5rem; margin-bottom: 0.5rem; color: #00d4ff; }
+        .pic { font-size: 1.2rem; color: #aaa; margin-bottom: 2rem; }
+        .timer { font-size: 4rem; font-weight: bold; font-family: monospace; letter-spacing: 2px; }
+        .labels { display: flex; justify-content: center; gap: 20px; color: #888; text-transform: uppercase; font-size: 0.8rem; margin-top: 10px; }
+    </style>
+</head>
+<body>
 
-  for (let i = 1; i < data.length; i++) {
-    const [task, name, email, targetDate] = data[i];
-    const diffDays = Math.ceil((targetDate - today) / (1000 * 60 * 60 * 24));
-    const dayOfWeek = today.getDay(); // 0 = Sunday, 1 = Monday...
+<div class="container">
+    <h1>CBSC Countdown</h1>
+    <div class="pic">Person in Charge: <strong>Roland</strong></div>
+    <div class="timer" id="clock">00:00:00:00</div>
+    <div class="labels">
+        <span>Days</span> : <span>Hrs</span> : <span>Min</span> : <span>Sec</span>
+    </div>
+</div>
 
-    let shouldSend = false;
+<script>
+    // Set your target date here
+    const target = new Date("December 31, 2026 23:59:59").getTime();
 
-    if (diffDays <= 0) continue; // Task is in the past
+    function updateClock() {
+        const now = new Date().getTime();
+        const diff = target - now;
 
-    if (diffDays <= 14) {
-      shouldSend = true; // DAILY (Under 2 weeks)
-    } else if (diffDays <= 30) {
-      if (dayOfWeek === 1 || dayOfWeek === 4) shouldSend = true; // 2x WEEKLY (Mon/Thu)
-    } else {
-      if (dayOfWeek === 1) shouldSend = true; // WEEKLY (Mon)
+        if (diff <= 0) {
+            document.getElementById("clock").innerHTML = "00:00:00:00";
+            return;
+        }
+
+        const d = Math.floor(diff / (1000 * 60 * 60 * 24));
+        const h = Math.floor((diff % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
+        const m = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60));
+        const s = Math.floor((diff % (1000 * 60)) / 1000);
+
+        // Adds leading zeros (e.g. 05 instead of 5)
+        const format = (num) => num.toString().padStart(2, '0');
+
+        document.getElementById("clock").innerHTML = 
+            `${format(d)}:${format(h)}:${format(m)}:${format(s)}`;
     }
 
-    if (shouldSend) {
-      MailApp.sendEmail(email, `Reminder: ${task}`, `Hi ${name}, you have ${diffDays} days left!`);
-    }
-  }
-}
+    setInterval(updateClock, 1000);
+    updateClock();
+</script>
+
+</body>
+</html>
