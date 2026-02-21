@@ -3,75 +3,74 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Live Countdown</title>
+    <title>Project Dashboard</title>
     <style>
-        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background: #1a1a1a; color: white; display: flex; justify-content: center; align-items: center; height: 100vh; margin: 0; }
-        .container { text-align: center; background: #2d2d2d; padding: 3rem; border-radius: 20px; box-shadow: 0 10px 30px rgba(0,0,0,0.5); border: 1px solid #444; }
-        h1 { font-size: 2.5rem; margin-bottom: 0.5rem; color: #00d4ff; }
-        .pic { font-size: 1.2rem; color: #aaa; margin-bottom: 2rem; }
-        .timer { font-size: 4rem; font-weight: bold; font-family: monospace; letter-spacing: 2px; }
-        .labels { display: flex; justify-content: center; gap: 20px; color: #888; text-transform: uppercase; font-size: 0.8rem; margin-top: 10px; }
-        #loading { font-style: italic; color: #00d4ff; }
+        body { font-family: 'Segoe UI', sans-serif; background: #1a1a1a; color: white; margin: 0; padding: 2rem; }
+        .dashboard { display: grid; grid-template-columns: repeat(auto-fit, minmax(350px, 1fr)); gap: 20px; max-width: 1200px; margin: 0 auto; }
+        .card { background: #2d2d2d; padding: 2rem; border-radius: 15px; box-shadow: 0 10px 20px rgba(0,0,0,0.3); border: 1px solid #444; text-align: center; }
+        h1 { font-size: 1.8rem; color: #00d4ff; margin-top: 0; }
+        .pic { color: #aaa; margin-bottom: 1.5rem; font-size: 0.9rem; }
+        .timer { font-size: 2.5rem; font-weight: bold; font-family: monospace; color: #fff; }
+        .labels { display: flex; justify-content: center; gap: 15px; color: #666; font-size: 0.7rem; margin-top: 5px; text-transform: uppercase; }
+        #loading { text-align: center; font-size: 1.5rem; color: #00d4ff; margin-top: 20vh; }
     </style>
 </head>
 <body>
 
-<div class="container">
-    <h1 id="displayTask">Loading Task...</h1>
-    <div class="pic">Person in Charge: <strong id="displayPerson">...</strong></div>
-    
-    <div id="loading">Connecting to Google Sheets...</div>
-    
-    <div class="timer" id="clock" style="display:none;">00:00:00:00</div>
-    <div class="labels" id="labels" style="display:none;">
-        <span>Days</span> : <span>Hrs</span> : <span>Min</span> : <span>Sec</span>
-    </div>
-</div>
+<div id="loading">Loading Dashboard...</div>
+<div class="dashboard" id="dashboard"></div>
 
 <script>
     const googleAppUrl = "https://script.google.com/macros/s/AKfycbyl6Dn1sRwiO2chwtSmm86Keg4Y-vu9RlpDpzyMPgiYLvhpQTKhxhE4z40HEI4L0pvS/exec";
 
-    async function startCountdown() {
+    async function initDashboard() {
         try {
             const response = await fetch(googleAppUrl);
-            const data = await response.json();
-            
-            // 1. Update the Text Names from the Sheet
-            document.getElementById("displayTask").innerText = data.task;
-            document.getElementById("displayPerson").innerText = data.person;
-
-            // 2. Setup the Timer
-            const target = new Date(data.deadline).getTime();
+            const projects = await response.json();
             document.getElementById("loading").style.display = "none";
-            document.getElementById("clock").style.display = "block";
-            document.getElementById("labels").style.display = "flex";
+            const container = document.getElementById("dashboard");
 
-            setInterval(() => {
-                const now = new Date().getTime();
-                const diff = target - now;
+            projects.forEach((proj, index) => {
+                // Create the HTML for each card
+                const card = document.createElement('div');
+                card.className = 'card';
+                const clockId = `clock-${index}`;
+                
+                card.innerHTML = `
+                    <h1>${proj.task}</h1>
+                    <div class="pic">Lead: <strong>${proj.person}</strong></div>
+                    <div class="timer" id="${clockId}">00:00:00:00</div>
+                    <div class="labels">
+                        <span>Days</span><span>Hrs</span><span>Min</span><span>Sec</span>
+                    </div>
+                `;
+                container.appendChild(card);
 
-                if (diff <= 0) {
-                    document.getElementById("clock").innerHTML = "00:00:00:00";
-                    return;
-                }
-
-                const d = Math.floor(diff / (1000 * 60 * 60 * 24));
-                const h = Math.floor((diff % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
-                const m = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60));
-                const s = Math.floor((diff % (1000 * 60)) / 1000);
-
-                const format = (num) => num.toString().padStart(2, '0');
-                document.getElementById("clock").innerHTML = `${format(d)}:${format(h)}:${format(m)}:${format(s)}`;
-            }, 1000);
-
-        } catch (error) {
-            console.error("Error:", error);
-            document.getElementById("loading").innerHTML = "Error syncing with Sheet.";
+                // Start timer for this specific card
+                startTimer(new Date(proj.deadline).getTime(), clockId);
+            });
+        } catch (e) {
+            document.getElementById("loading").innerText = "Error loading projects.";
         }
     }
 
-    startCountdown();
-</script>
+    function startTimer(target, elementId) {
+        const el = document.getElementById(elementId);
+        setInterval(() => {
+            const now = new Date().getTime();
+            const diff = target - now;
+            if (diff <= 0) { el.innerHTML = "00:00:00:00"; return; }
 
+            const d = Math.floor(diff / 86400000);
+            const h = Math.floor((diff % 86400000) / 3600000);
+            const m = Math.floor((diff % 3600000) / 600000);
+            const s = Math.floor((diff % 60000) / 1000);
+            const fmt = (n) => n.toString().padStart(2, '0');
+            el.innerHTML = `${fmt(d)}:${fmt(h)}:${fmt(m)}:${fmt(s)}`;
+        }, 1000);
+    }
+
+    initDashboard();
+</script>
 </body>
 </html>
