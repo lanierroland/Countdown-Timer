@@ -3,74 +3,83 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Project Dashboard</title>
+    <title>Project Countdown Dashboard</title>
     <style>
-        body { font-family: 'Segoe UI', sans-serif; background: #1a1a1a; color: white; margin: 0; padding: 2rem; }
-        .dashboard { display: grid; grid-template-columns: repeat(auto-fit, minmax(350px, 1fr)); gap: 20px; max-width: 1200px; margin: 0 auto; }
-        .card { background: #2d2d2d; padding: 2rem; border-radius: 15px; box-shadow: 0 10px 20px rgba(0,0,0,0.3); border: 1px solid #444; text-align: center; }
-        h1 { font-size: 1.8rem; color: #00d4ff; margin-top: 0; }
-        .pic { color: #aaa; margin-bottom: 1.5rem; font-size: 0.9rem; }
-        .timer { font-size: 2.5rem; font-weight: bold; font-family: monospace; color: #fff; }
-        .labels { display: flex; justify-content: center; gap: 15px; color: #666; font-size: 0.7rem; margin-top: 5px; text-transform: uppercase; }
-        #loading { text-align: center; font-size: 1.5rem; color: #00d4ff; margin-top: 20vh; }
+        body { 
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; 
+            background: #121212; 
+            color: white; 
+            margin: 0; 
+            padding: 2rem; 
+        }
+        h2.main-title {
+            text-align: center;
+            color: #00d4ff;
+            margin-bottom: 2rem;
+            text-transform: uppercase;
+            letter-spacing: 3px;
+        }
+        .dashboard { 
+            display: grid; 
+            grid-template-columns: repeat(auto-fit, minmax(320px, 1fr)); 
+            gap: 25px; 
+            max-width: 1200px; 
+            margin: 0 auto; 
+        }
+        .card { 
+            background: #1e1e1e; 
+            padding: 2rem; 
+            border-radius: 15px; 
+            box-shadow: 0 10px 30px rgba(0,0,0,0.5); 
+            border: 1px solid #333; 
+            text-align: center;
+            transition: transform 0.3s ease;
+        }
+        .card:hover {
+            transform: translateY(-5px);
+            border-color: #00d4ff;
+        }
+        h1 { 
+            font-size: 1.6rem; 
+            margin: 0 0 0.5rem 0; 
+            color: #00d4ff; 
+        }
+        .pic { 
+            font-size: 0.9rem; 
+            color: #888; 
+            margin-bottom: 1.5rem; 
+        }
+        .pic strong {
+            color: #ddd;
+        }
+        .timer { 
+            font-size: 2.2rem; 
+            font-weight: bold; 
+            font-family: 'Courier New', Courier, monospace; 
+            background: #262626;
+            padding: 10px;
+            border-radius: 8px;
+            display: inline-block;
+            width: 100%;
+            box-sizing: border-box;
+        }
+        .labels { 
+            display: flex; 
+            justify-content: space-around; 
+            color: #555; 
+            text-transform: uppercase; 
+            font-size: 0.65rem; 
+            margin-top: 8px; 
+            letter-spacing: 1px;
+        }
+        #loading { 
+            text-align: center; 
+            font-size: 1.2rem; 
+            color: #aaa; 
+            margin-top: 20vh; 
+        }
     </style>
 </head>
 <body>
 
-<div id="loading">Loading Dashboard...</div>
-<div class="dashboard" id="dashboard"></div>
-
-<script>
-    const googleAppUrl = "https://script.google.com/macros/s/AKfycbyl6Dn1sRwiO2chwtSmm86Keg4Y-vu9RlpDpzyMPgiYLvhpQTKhxhE4z40HEI4L0pvS/exec";
-
-    async function initDashboard() {
-        try {
-            const response = await fetch(googleAppUrl);
-            const projects = await response.json();
-            document.getElementById("loading").style.display = "none";
-            const container = document.getElementById("dashboard");
-
-            projects.forEach((proj, index) => {
-                // Create the HTML for each card
-                const card = document.createElement('div');
-                card.className = 'card';
-                const clockId = `clock-${index}`;
-                
-                card.innerHTML = `
-                    <h1>${proj.task}</h1>
-                    <div class="pic">Lead: <strong>${proj.person}</strong></div>
-                    <div class="timer" id="${clockId}">00:00:00:00</div>
-                    <div class="labels">
-                        <span>Days</span><span>Hrs</span><span>Min</span><span>Sec</span>
-                    </div>
-                `;
-                container.appendChild(card);
-
-                // Start timer for this specific card
-                startTimer(new Date(proj.deadline).getTime(), clockId);
-            });
-        } catch (e) {
-            document.getElementById("loading").innerText = "Error loading projects.";
-        }
-    }
-
-    function startTimer(target, elementId) {
-        const el = document.getElementById(elementId);
-        setInterval(() => {
-            const now = new Date().getTime();
-            const diff = target - now;
-            if (diff <= 0) { el.innerHTML = "00:00:00:00"; return; }
-
-            const d = Math.floor(diff / 86400000);
-            const h = Math.floor((diff % 86400000) / 3600000);
-            const m = Math.floor((diff % 3600000) / 600000);
-            const s = Math.floor((diff % 60000) / 1000);
-            const fmt = (n) => n.toString().padStart(2, '0');
-            el.innerHTML = `${fmt(d)}:${fmt(h)}:${fmt(m)}:${fmt(s)}`;
-        }, 1000);
-    }
-
-    initDashboard();
-</script>
-</body>
-</html>
+<h2 class="main-
