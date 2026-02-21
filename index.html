@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Project Countdown Dashboard</title>
+    <title>Wedding Countdown</title>
     <style>
         body { 
             font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; 
@@ -14,10 +14,11 @@
         }
         h2.main-title {
             text-align: center;
-            color: #00d4ff;
+            color: #00d4ff; /* You can change this to #ff69b4 for pink! */
             text-transform: uppercase;
             letter-spacing: 3px;
-            margin-top: 20px;
+            margin-top: 40px;
+            font-size: 2rem;
         }
         .dashboard { 
             display: grid; 
@@ -37,18 +38,19 @@
         h1 { font-size: 1.5rem; color: #00d4ff; margin: 0 0 10px 0; }
         .pic { font-size: 0.9rem; color: #888; margin-bottom: 20px; }
         .timer { 
-            font-size: 2.2rem; 
+            font-size: 2.5rem; 
             font-weight: bold; 
             font-family: monospace; 
             background: #262626;
-            padding: 10px;
+            padding: 15px;
             border-radius: 8px;
             color: #fff;
+            letter-spacing: 2px;
         }
         .labels { 
             display: flex; 
             justify-content: space-around; 
-            color: #555; 
+            color: #666; 
             text-transform: uppercase; 
             font-size: 0.7rem; 
             margin-top: 10px; 
@@ -63,12 +65,12 @@
 </head>
 <body>
 
-<h2 class="main-title">Project Countdowns</h2>
-<div id="loading">Connecting to System...</div>
+<h2 class="main-title">Carly & Lanier Wedding Countdown</h2>
+
+<div id="loading">Gathering the details...</div>
 <div class="dashboard" id="dashboard"></div>
 
 <script>
-    // MAKE SURE THIS URL IS CORRECT
     const googleAppUrl = "https://script.google.com/macros/s/AKfycbyl6Dn1sRwiO2chwtSmm86Keg4Y-vu9RlpDpzyMPgiYLvhpQTKhxhE4z40HEI4L0pvS/exec";
 
     async function initDashboard() {
@@ -76,14 +78,12 @@
         const dashboardEl = document.getElementById("dashboard");
 
         try {
-            // Fetch with mobile-friendly settings
             const response = await fetch(googleAppUrl);
-            
-            if (!response.ok) throw new Error('Network response was not ok');
-            
+            if (!response.ok) throw new Error('Network error');
             const projects = await response.json();
             
             loadingEl.style.display = "none";
+            dashboardEl.innerHTML = ""; // Clears dashboard for fresh load
 
             projects.forEach((proj, index) => {
                 const card = document.createElement('div');
@@ -91,8 +91,8 @@
                 const clockId = `clock-${index}`;
                 
                 card.innerHTML = `
-                    <h1>${proj.task || 'Unnamed Task'}</h1>
-                    <div class="pic">PIC: <strong>${proj.person || 'N/A'}</strong></div>
+                    <h1>${proj.task}</h1>
+                    <div class="pic">In Charge: <strong>${proj.person}</strong></div>
                     <div class="timer" id="${clockId}">00:00:00:00</div>
                     <div class="labels">
                         <span>Days</span><span>Hrs</span><span>Min</span><span>Sec</span>
@@ -102,39 +102,31 @@
                 startTimer(new Date(proj.deadline).getTime(), clockId);
             });
         } catch (error) {
-            console.error("Error:", error);
-            loadingEl.innerHTML = "Connection Error. <br><br> Please check if the Google Web App is deployed to 'Anyone'.";
+            loadingEl.innerHTML = "Connection Error. Check Google App Permissions.";
             loadingEl.style.color = "#ff4c4c";
         }
     }
 
     function startTimer(targetTime, elementId) {
         const el = document.getElementById(elementId);
-        if (!el) return;
-
         function update() {
             const now = new Date().getTime();
             const diff = targetTime - now;
-
             if (isNaN(targetTime) || diff <= 0) {
                 el.innerHTML = "00:00:00:00";
                 return;
             }
-
             const d = Math.floor(diff / 86400000);
             const h = Math.floor((diff % 86400000) / 3600000);
             const m = Math.floor((diff % 3600000) / 60000);
             const s = Math.floor((diff % 60000) / 1000);
-
             const fmt = (n) => n.toString().padStart(2, '0');
             el.innerHTML = `${fmt(d)}:${fmt(h)}:${fmt(m)}:${fmt(s)}`;
         }
-
         setInterval(update, 1000);
         update();
     }
 
-    // Start the app
     initDashboard();
 </script>
 
