@@ -10,76 +10,133 @@
             background: #121212; 
             color: white; 
             margin: 0; 
-            padding: 2rem; 
+            padding: 20px; 
         }
         h2.main-title {
             text-align: center;
             color: #00d4ff;
-            margin-bottom: 2rem;
             text-transform: uppercase;
             letter-spacing: 3px;
+            margin-top: 20px;
         }
         .dashboard { 
             display: grid; 
-            grid-template-columns: repeat(auto-fit, minmax(320px, 1fr)); 
-            gap: 25px; 
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); 
+            gap: 20px; 
             max-width: 1200px; 
-            margin: 0 auto; 
+            margin: 40px auto; 
         }
         .card { 
             background: #1e1e1e; 
-            padding: 2rem; 
+            padding: 25px; 
             border-radius: 15px; 
             box-shadow: 0 10px 30px rgba(0,0,0,0.5); 
             border: 1px solid #333; 
             text-align: center;
-            transition: transform 0.3s ease;
         }
-        .card:hover {
-            transform: translateY(-5px);
-            border-color: #00d4ff;
-        }
-        h1 { 
-            font-size: 1.6rem; 
-            margin: 0 0 0.5rem 0; 
-            color: #00d4ff; 
-        }
-        .pic { 
-            font-size: 0.9rem; 
-            color: #888; 
-            margin-bottom: 1.5rem; 
-        }
-        .pic strong {
-            color: #ddd;
-        }
+        h1 { font-size: 1.5rem; color: #00d4ff; margin: 0 0 10px 0; }
+        .pic { font-size: 0.9rem; color: #888; margin-bottom: 20px; }
         .timer { 
             font-size: 2.2rem; 
             font-weight: bold; 
-            font-family: 'Courier New', Courier, monospace; 
+            font-family: monospace; 
             background: #262626;
             padding: 10px;
             border-radius: 8px;
-            display: inline-block;
-            width: 100%;
-            box-sizing: border-box;
+            color: #fff;
         }
         .labels { 
             display: flex; 
             justify-content: space-around; 
             color: #555; 
             text-transform: uppercase; 
-            font-size: 0.65rem; 
-            margin-top: 8px; 
-            letter-spacing: 1px;
+            font-size: 0.7rem; 
+            margin-top: 10px; 
         }
         #loading { 
             text-align: center; 
             font-size: 1.2rem; 
-            color: #aaa; 
-            margin-top: 20vh; 
+            color: #00d4ff; 
+            margin-top: 100px; 
         }
     </style>
 </head>
 <body>
 
-<h2 class="main-
+<h2 class="main-title">Project Countdowns</h2>
+<div id="loading">Connecting to System...</div>
+<div class="dashboard" id="dashboard"></div>
+
+<script>
+    // MAKE SURE THIS URL IS CORRECT
+    const googleAppUrl = "https://script.google.com/macros/s/AKfycbyl6Dn1sRwiO2chwtSmm86Keg4Y-vu9RlpDpzyMPgiYLvhpQTKhxhE4z40HEI4L0pvS/exec";
+
+    async function initDashboard() {
+        const loadingEl = document.getElementById("loading");
+        const dashboardEl = document.getElementById("dashboard");
+
+        try {
+            // Fetch with mobile-friendly settings
+            const response = await fetch(googleAppUrl);
+            
+            if (!response.ok) throw new Error('Network response was not ok');
+            
+            const projects = await response.json();
+            
+            loadingEl.style.display = "none";
+
+            projects.forEach((proj, index) => {
+                const card = document.createElement('div');
+                card.className = 'card';
+                const clockId = `clock-${index}`;
+                
+                card.innerHTML = `
+                    <h1>${proj.task || 'Unnamed Task'}</h1>
+                    <div class="pic">PIC: <strong>${proj.person || 'N/A'}</strong></div>
+                    <div class="timer" id="${clockId}">00:00:00:00</div>
+                    <div class="labels">
+                        <span>Days</span><span>Hrs</span><span>Min</span><span>Sec</span>
+                    </div>
+                `;
+                dashboardEl.appendChild(card);
+                startTimer(new Date(proj.deadline).getTime(), clockId);
+            });
+        } catch (error) {
+            console.error("Error:", error);
+            loadingEl.innerHTML = "Connection Error. <br><br> Please check if the Google Web App is deployed to 'Anyone'.";
+            loadingEl.style.color = "#ff4c4c";
+        }
+    }
+
+    function startTimer(targetTime, elementId) {
+        const el = document.getElementById(elementId);
+        if (!el) return;
+
+        function update() {
+            const now = new Date().getTime();
+            const diff = targetTime - now;
+
+            if (isNaN(targetTime) || diff <= 0) {
+                el.innerHTML = "00:00:00:00";
+                return;
+            }
+
+            const d = Math.floor(diff / 86400000);
+            const h = Math.floor((diff % 86400000) / 3600000);
+            const m = Math.floor((diff % 3600000) / 60000);
+            const s = Math.floor((diff % 60000) / 1000);
+
+            const fmt = (n) => n.toString().padStart(2, '0');
+            el.innerHTML = `${fmt(d)}:${fmt(h)}:${fmt(m)}:${fmt(s)}`;
+        }
+
+        setInterval(update, 1000);
+        update();
+    }
+
+    // Start the app
+    initDashboard();
+</script>
+
+</body>
+</html>
