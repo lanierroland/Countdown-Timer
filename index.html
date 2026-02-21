@@ -1,0 +1,27 @@
+function sendReminders() {
+  const sheet = SpreadsheetApp.getActiveSpreadsheet().getActiveSheet();
+  const data = sheet.getDataRange().getValues();
+  const today = new Date();
+
+  for (let i = 1; i < data.length; i++) {
+    const [task, name, email, targetDate] = data[i];
+    const diffDays = Math.ceil((targetDate - today) / (1000 * 60 * 60 * 24));
+    const dayOfWeek = today.getDay(); // 0 = Sunday, 1 = Monday...
+
+    let shouldSend = false;
+
+    if (diffDays <= 0) continue; // Task is in the past
+
+    if (diffDays <= 14) {
+      shouldSend = true; // DAILY (Under 2 weeks)
+    } else if (diffDays <= 30) {
+      if (dayOfWeek === 1 || dayOfWeek === 4) shouldSend = true; // 2x WEEKLY (Mon/Thu)
+    } else {
+      if (dayOfWeek === 1) shouldSend = true; // WEEKLY (Mon)
+    }
+
+    if (shouldSend) {
+      MailApp.sendEmail(email, `Reminder: ${task}`, `Hi ${name}, you have ${diffDays} days left!`);
+    }
+  }
+}
