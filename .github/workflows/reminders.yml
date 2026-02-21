@@ -1,0 +1,40 @@
+name: Send Countdown Reminders
+on:
+  schedule:
+    - cron: '0 13 * * *' # Runs every day at 13:00 UTC (8:00 AM EST)
+  workflow_dispatch: # Allows you to run it manually to test
+
+jobs:
+  remind:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Run Reminder Logic
+        shell: bash
+        env:
+          EMAIL_USER: ${{ secrets.EMAIL_USER }}
+          EMAIL_PASS: ${{ secrets.EMAIL_PASS }}
+        run: |
+          # Define your target date here (YYYY-MM-DD)
+          TARGET_DATE="2026-12-31"
+          PIC_EMAIL="person-in-charge@example.com"
+          PIC_NAME="Alex"
+          
+          TODAY=$(date +%Y-%m-%d)
+          DIFF=$(( ($(date -d $TARGET_DATE +%s) - $(date -d $TODAY +%s)) / 86400 ))
+          DOW=$(date +%u) # 1=Mon, 4=Thu
+
+          SEND=false
+          if [ $DIFF -le 0 ]; then exit 0; fi
+          if [ $DIFF -le 14 ]; then SEND=true; # Daily
+          elif [ $DIFF -le 30 ] && [[ "$DOW" == "1" || "$DOW" == "4" ]]; then SEND=true; # 2x Week
+          elif [ "$DOW" == "1" ]; then SEND=true; # 1x Week
+          fi
+
+          if [ "$SEND" = true ]; then
+            echo "Sending email to $PIC_NAME..."
+            # This uses a simple curl command to an email API or a mail script
+            # For a truly 'simple' setup, most people use a 'Mail Action' here
+          fi
